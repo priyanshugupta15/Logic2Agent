@@ -2,7 +2,7 @@
 import React from 'react'
 import Header from '../_component/Header'
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, Controls, MiniMap, reconnectEdge, useReactFlow, ReactFlowProvider, Panel } from '@xyflow/react';
+import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, Controls, MiniMap, reconnectEdge, useReactFlow, ReactFlowProvider, Panel, useOnSelectionChange } from '@xyflow/react';
 import { Loader2 } from 'lucide-react';
 import '@xyflow/react/dist/style.css';
 import StartNode from '../_component/StartNode';
@@ -13,6 +13,7 @@ import WhileNode from '../_component/WhileNode';
 import UserApprovalNode from '../_component/UserApprovalNode';
 import ApiNode from '../_component/ApiNode';
 import ToolPanel from '../_component/ToolPanel';
+import SettingPannel from '../_component/SettingPannel';
 import { useParams } from 'next/navigation';
 import { useMutation, useQuery } from 'convex/react';
 import { toast } from 'sonner';
@@ -52,6 +53,22 @@ function AgentBuilderContent() {
     const [isSaving, setIsSaving] = useState(false);
     const UpdateAgentDetail = useMutation(api.agent.UpdateAgentDetail);
     const edgeReconnectSuccessful = useRef(true);
+
+    const [selectedNode, setSelectedNode] = useState<any>(null);
+
+    useOnSelectionChange({
+        onChange: ({ nodes }) => {
+            const node = nodes[0];
+            if (node) {
+                // Ensure selected is true for verification
+                const nodeWithSelection = { ...node, selected: true };
+                console.log("Selected Node:", nodeWithSelection);
+                setSelectedNode(nodeWithSelection);
+            } else {
+                setSelectedNode(null);
+            }
+        },
+    });
 
     useEffect(() => {
         setIsMounted(true);
@@ -193,9 +210,10 @@ function AgentBuilderContent() {
                             <p className="text-gray-500 font-medium">Loading workspace...</p>
                         </div>
                     )}
+                    <SettingPannel selectedNode={selectedNode} setNodes={setNodes} />
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

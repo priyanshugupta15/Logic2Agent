@@ -9,7 +9,7 @@ interface IfElseNodeProps {
 
 function IfElseNode({ selected }: IfElseNodeProps) {
     return (
-        <div className={`flex flex-col gap-2 bg-white dark:bg-gray-900 border-2 rounded-xl p-4 shadow-sm min-w-[200px] relative transition-all hover:shadow-md ${selected ? 'border-yellow-500 shadow-yellow-500/20' : 'border-yellow-500'}`}>
+        <div className={`flex flex-col gap-2 bg-white dark:bg-gray-900 border-2 rounded-xl p-4 shadow-sm min-w-[150px] relative transition-all hover:shadow-md ${selected ? 'border-yellow-500 shadow-yellow-500/20' : 'border-yellow-500'}`}>
             <Handle
                 type="target"
                 position={Position.Left}
@@ -21,23 +21,26 @@ function IfElseNode({ selected }: IfElseNodeProps) {
                     <Split className='h-6 w-6 text-yellow-500' />
                 </div>
                 <div>
-                    <p className='text-xs text-gray-500 font-medium uppercase tracking-wider'>Logic</p>
                     <h2 className='text-lg font-bold'>If/Else</h2>
                 </div>
             </div>
 
-            {selected && (
-                <div className='mt-2 space-y-2 animate-in fade-in zoom-in-95 duration-200'>
+            <div className='mt-2 space-y-2'>
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-200 dark:border-gray-700">
+                    <span className="text-xs font-semibold text-green-600">IF</span>
                     <input
-                        className='w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 nodrag'
-                        placeholder='If Condition'
-                    />
-                    <input
-                        className='w-full px-3 py-2 text-sm border rounded-md dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-500/50 nodrag'
-                        placeholder='Else Condition'
+                        className='w-full bg-transparent text-sm focus:outline-none nodrag'
+                        placeholder='Condition...'
                     />
                 </div>
-            )}
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-200 dark:border-gray-700">
+                    <span className="text-xs font-semibold text-red-500">ELSE</span>
+                    <input
+                        className='w-full bg-transparent text-sm focus:outline-none nodrag'
+                        placeholder='Condition...'
+                    />
+                </div>
+            </div>
 
             {/* True Path */}
             <Handle

@@ -52,3 +52,12 @@ export const UpdateAgentDetail = mutation({
         });
     },
 });
+
+export const deleteAgent = mutation({
+    args: {
+        agentId: v.id("AgentTable"),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.delete(args.agentId);
+    },
+});
