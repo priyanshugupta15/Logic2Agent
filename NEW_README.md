@@ -4,7 +4,7 @@ Logic2Agent is an advanced AI agent builder platform that enables users to creat
 
 ## Problem Statement
 
-Traditional AI agent development requires extensive programming knowledge, deep understanding of machine learning frameworks, and significant time investment. This creates a barrier for domain experts, business professionals, and innovators who have valuable ideas but lack the technical skills to implement them.
+Traditional AI agent development requires extensive programming knowledge, deep understanding of machine learning frameworks, and significant time investment. This creates a barrier for domain experts, business professionals, and innovators who have valuable ideas but lack the technical skills to implement them. 
 
 The current landscape presents several challenges:
 - High technical barrier to entry for AI agent creation
@@ -108,6 +108,15 @@ Logic2Agent addresses these challenges by providing a no-code solution that empo
 - **Prompt Engineering Interface**: Fine-tuning AI behavior without code
 - **Agent Testing Environment**: Simulated environments for agent validation
 - **Performance Analytics**: Monitoring agent effectiveness and efficiency
+
+## Features
+
+- **Visual Agent Builder**: Create complex AI workflows with our drag-and-drop interface
+- **No-Code Approach**: Build sophisticated agents without writing a single line of code
+- **Enterprise Integration**: Connect to popular tools like Slack, Discord, Google Workspace, and more
+- **Real-time Analytics**: Monitor agent performance and optimize workflows
+- **Security First**: Enterprise-grade security with data encryption and compliance controls
+- **Scalable Architecture**: Built to handle growing complexity and usage demands
 
 ## Getting Started
 
