@@ -28,7 +28,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
-            Architect sophisticated logic-driven agents that breathe life into your data. Logic2Agent isn't just a tool; it's the bridge between <span className="text-primary/80 font-medium">raw intelligence</span> and <span className="text-secondary/80 font-medium">autonomous execution.</span>
+            Logic2Agent is a <span className="text-primary/80 font-medium">visual reasoning compiler</span> that converts drag-and-drop logic flows into <span className="text-secondary/80 font-medium">multi-agent AI behaviors</span>, deployable instantly as a web chatbot.
           </p>
 
 

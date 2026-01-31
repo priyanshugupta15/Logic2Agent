@@ -18,6 +18,7 @@ import { LayoutDashboard, Headphones, Database, WalletCards, Home, Gem } from "l
 import { useContext } from "react"
 import { UserDetailContext } from "@/context/UserDetailContext"
 import { Button } from "@/components/ui/button"
+import { usePathname } from "next/navigation"
 
 const MenuOptions = [
     {
@@ -27,7 +28,7 @@ const MenuOptions = [
     },
     {
         title: 'AI Agents',
-        url: '#',
+        url: '/dashboard#ai-agents',
         icon: Headphones
     },
     {
@@ -45,6 +46,7 @@ const MenuOptions = [
 export function AppSidebar() {
     const { userDetail } = useContext(UserDetailContext);
     const { open, isMobile } = useSidebar();
+    const pathname = usePathname();
 
     return (
         <Sidebar collapsible={isMobile ? "offcanvas" : "none"} className="border-r border-white/5 bg-black/70 backdrop-blur-md md:h-svh md:sticky md:top-0">
@@ -64,16 +66,27 @@ export function AppSidebar() {
                     <SidebarGroupLabel className={`${open ? 'text-[10px]' : 'hidden'} py-4 px-3 mb-2 transition-all duration-200 ease-in-out font-bold text-gray-500 uppercase tracking-[0.2em]`}>Application</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {MenuOptions.map((menu, index) => (
-                                <SidebarMenuItem key={index} className="mb-2">
-                                    <SidebarMenuButton asChild className="py-6 px-4 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all group">
-                                        <a href={menu.url} className="flex items-center gap-4">
-                                            <menu.icon className="h-6 w-6 group-hover:scale-110 transition-transform group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]" />
-                                            <span className={`${open ? 'text-lg' : 'hidden'} font-semibold transition-all duration-200 ease-in-out`}>{menu.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
+                            {MenuOptions.map((menu, index) => {
+                                // Check if active based on path or base path for hash links
+                                const isActive = pathname === menu.url || (menu.url.includes('#') && pathname === menu.url.split('#')[0]);
+                                return (
+                                    <SidebarMenuItem key={index} className="mb-2">
+                                        <SidebarMenuButton
+                                            asChild
+                                            className={`py-6 px-4 rounded-2xl transition-all group ${isActive
+                                                ? 'bg-primary/15 text-primary shadow-[inset_0_0_10px_rgba(6,182,212,0.1)]'
+                                                : 'hover:bg-primary/10 hover:text-primary'
+                                                }`}
+                                        >
+                                            <Link href={menu.url} className="flex items-center gap-4">
+                                                <menu.icon className={`h-6 w-6 transition-transform group-hover:scale-110 ${isActive ? 'scale-110 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]' : ''
+                                                    } group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]`} />
+                                                <span className={`${open ? 'text-lg' : 'hidden'} font-semibold transition-all duration-200 ease-in-out`}>{menu.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                )
+                            })}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

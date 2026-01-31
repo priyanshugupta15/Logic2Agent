@@ -27,7 +27,7 @@ function AiAgentTab() {
     if (!mounted) return null;
 
     return (
-        <div className='px-10 md:px-24 lg:px-32 mt-10'>
+        <div id="ai-agents" className='px-10 md:px-24 lg:px-32 mt-10 scroll-mt-24'>
             <Tabs defaultValue="myagent" className="w-full">
                 <TabsList>
                     <TabsTrigger value="myagent">My Agents</TabsTrigger>
