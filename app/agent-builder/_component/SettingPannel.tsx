@@ -57,136 +57,152 @@ function SettingPannel({ selectedNode, setNodes, onSave }: SettingPannelProps) {
                 <div className='space-y-6'>
 
                     {/* Common Settings: Name & Instructions (Available for all or specific ones? Let's keep for all as base) */}
-                    <div className='space-y-2'>
-                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Name</label>
-                        <input
-                            type="text"
-                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm'
-                            value={inputs.name || ''}
-                            onChange={(e) => handleInputChange('name', e.target.value)}
-                            placeholder={`e.g., AI Trip Planner`}
-                        />
-                    </div>
+                    {/* EndNode Specific Settings */}
+                    {selectedNode.type === 'EndNode' && (
+                        <div className='space-y-4'>
+                            <p className='text-sm text-gray-500'>Choose the workflow output</p>
 
-                    {/* Node Specific Settings */}
-                    {selectedNode.type === 'ApiNode' && (
-                        <>
                             <div className='space-y-2'>
-                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>API URL</label>
-                                <input
-                                    type="url"
-                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-mono'
-                                    value={inputs.url || ''}
-                                    onChange={(e) => handleInputChange('url', e.target.value)}
-                                    placeholder='https://api.example.com/v1/...'
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Output</label>
+                                <textarea
+                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[100px] font-mono'
+                                    value={inputs.output || ''}
+                                    onChange={(e) => handleInputChange('output', e.target.value)}
+                                    placeholder='{name:string}'
                                 />
                             </div>
+                        </div>
+                    )}
+
+                    {/* Common Settings: Name & Instructions - HIDE for EndNode based on strict design request */}
+                    {selectedNode.type !== 'EndNode' && (
+                        <>
                             <div className='space-y-2'>
-                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Method</label>
-                                <select
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Name</label>
+                                <input
+                                    type="text"
                                     className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm'
-                                    value={inputs.method || 'GET'}
-                                    onChange={(e) => handleInputChange('method', e.target.value)}
+                                    value={inputs.name || ''}
+                                    onChange={(e) => handleInputChange('name', e.target.value)}
+                                    placeholder={`e.g., AI Trip Planner`}
+                                />
+                            </div>
+
+                            {/* Node Specific Settings for API */}
+                            {selectedNode.type === 'ApiNode' && (
+                                <>
+                                    <div className='space-y-2'>
+                                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>API URL</label>
+                                        <input
+                                            type="url"
+                                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-mono'
+                                            value={inputs.url || ''}
+                                            onChange={(e) => handleInputChange('url', e.target.value)}
+                                            placeholder='https://api.example.com/v1/...'
+                                        />
+                                    </div>
+                                    <div className='space-y-2'>
+                                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Method</label>
+                                        <select
+                                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm'
+                                            value={inputs.method || 'GET'}
+                                            onChange={(e) => handleInputChange('method', e.target.value)}
+                                        >
+                                            <option value="GET">GET</option>
+                                            <option value="POST">POST</option>
+                                            <option value="PUT">PUT</option>
+                                            <option value="DELETE">DELETE</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+
+                            <div className='space-y-2'>
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Instructions</label>
+                                <textarea
+                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[100px] resize-none'
+                                    value={inputs.instructions || ''}
+                                    onChange={(e) => handleInputChange('instructions', e.target.value)}
+                                    placeholder='Instructions or Description'
+                                />
+                            </div>
+
+                            <div className='flex items-center justify-between'>
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Include chat history</label>
+                                <div
+                                    className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors ${inputs.includeChatHistory ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'}`}
+                                    onClick={() => handleInputChange('includeChatHistory', !inputs.includeChatHistory)}
                                 >
-                                    <option value="GET">GET</option>
-                                    <option value="POST">POST</option>
-                                    <option value="PUT">PUT</option>
-                                    <option value="DELETE">DELETE</option>
+                                    <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${inputs.includeChatHistory ? 'translate-x-4' : ''}`}></div>
+                                </div>
+                            </div>
+
+                            <div className='space-y-2'>
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Model</label>
+                                <select
+                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none'
+                                    value={inputs.model || 'gpt-4'}
+                                    onChange={(e) => handleInputChange('model', e.target.value)}>
+                                    <option value="gemini-flash-1.5">Gemini Flash 1.5</option>
+                                    <option value="gemini-pro-1.5">Gemini Pro 1.5</option>
+                                    <option value="gemini-pro-2.0">Gemini Pro 2.0</option>
                                 </select>
+                            </div>
+
+                            <div className='space-y-4'>
+                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300 block'>Output Format</label>
+
+                                <div className='flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit'>
+                                    <button
+                                        onClick={() => handleInputChange('outputFormat', 'text')}
+                                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${inputs.outputFormat === 'text' || !inputs.outputFormat
+                                            ? 'bg-white shadow-sm text-gray-900'
+                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                    >
+                                        Text
+                                    </button>
+
+                                    <button
+                                        onClick={() => handleInputChange('outputFormat', 'json')}
+                                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${inputs.outputFormat === 'json'
+                                            ? 'bg-white shadow-sm text-gray-900'
+                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                    >
+                                        Json
+                                    </button>
+                                </div>
+
+                                {inputs.outputFormat === 'json' && (
+                                    <div className='space-y-2 animate-in fade-in slide-in-from-top-2 duration-200'>
+                                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Enter Json Schema</label>
+                                        <textarea
+                                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[50px] font-mono'
+                                            value={inputs.jsonSchema || ''}
+                                            onChange={(e) => handleInputChange('jsonSchema', e.target.value)}
+                                            placeholder='{ title: "string" }'
+                                        />
+                                    </div>
+                                )}
+
+                                {inputs.outputFormat === 'text' && (
+                                    <div className='space-y-2 animate-in fade-in slide-in-from-top-2 duration-200'>
+                                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Output</label>
+                                        <textarea
+                                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[50px] font-mono'
+                                            value={inputs.jsonSchema || ''}
+                                            onChange={(e) => handleInputChange('jsonSchema', e.target.value)}
+                                            placeholder='Output will be texted here'
+                                        />
+                                    </div>
+                                )}
+
+
                             </div>
                         </>
                     )}
-
-                    {/* Common Agent Settings (likely relevant for AgentNode, maybe others but user asked for "same panels") */}
-                    {/* Render these for AgentNode or *all* if the user really wants uniform AI settings everywhere. 
-                        Let's render them for AgentNode OR if the user wants them broadly. 
-                        Given "all agent tools should have same setting pannels", I'll include them but maybe logically it applies to Agent. 
-                        Let's include them for ALL for now as per previous instruction, but AFTER the specific fields.
-                    */}
-
-                    <div className='space-y-2'>
-                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Instructions</label>
-                        <textarea
-                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[100px] resize-none'
-                            value={inputs.instructions || ''}
-                            onChange={(e) => handleInputChange('instructions', e.target.value)}
-                            placeholder='Instructions or Description'
-                        />
-                    </div>
-
-                    <div className='flex items-center justify-between'>
-                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Include chat history</label>
-                        <div
-                            className={`w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 cursor-pointer transition-colors ${inputs.includeChatHistory ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'}`}
-                            onClick={() => handleInputChange('includeChatHistory', !inputs.includeChatHistory)}
-                        >
-                            <div className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${inputs.includeChatHistory ? 'translate-x-4' : ''}`}></div>
-                        </div>
-                    </div>
-
-                    <div className='space-y-2'>
-                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Model</label>
-                        <select
-                            className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm appearance-none'
-                            value={inputs.model || 'gpt-4'}
-                            onChange={(e) => handleInputChange('model', e.target.value)}>
-                            <option value="gemini-flash-1.5">Gemini Flash 1.5</option>
-                            <option value="gemini-pro-1.5">Gemini Pro 1.5</option>
-                            <option value="gemini-pro-2.0">Gemini Pro 2.0</option>
-                        </select>
-                    </div>
-
-                    <div className='space-y-4'>
-                        <label className='text-sm font-semibold text-gray-700 dark:text-gray-300 block'>Output Format</label>
-
-                        <div className='flex items-center gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit'>
-                            <button
-                                onClick={() => handleInputChange('outputFormat', 'text')}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${inputs.outputFormat === 'text' || !inputs.outputFormat
-                                    ? 'bg-white shadow-sm text-gray-900'
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                                    }`}
-                            >
-                                Text
-                            </button>
-
-                            <button
-                                onClick={() => handleInputChange('outputFormat', 'json')}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${inputs.outputFormat === 'json'
-                                    ? 'bg-white shadow-sm text-gray-900'
-                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                                    }`}
-                            >
-                                Json
-                            </button>
-                        </div>
-
-                        {inputs.outputFormat === 'json' && (
-                            <div className='space-y-2 animate-in fade-in slide-in-from-top-2 duration-200'>
-                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Enter Json Schema</label>
-                                <textarea
-                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[50px] font-mono'
-                                    value={inputs.jsonSchema || ''}
-                                    onChange={(e) => handleInputChange('jsonSchema', e.target.value)}
-                                    placeholder='{ title: "string" }'
-                                />
-                            </div>
-                        )}
-
-                        {inputs.outputFormat === 'text' && (
-                            <div className='space-y-2 animate-in fade-in slide-in-from-top-2 duration-200'>
-                                <label className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Output</label>
-                                <textarea
-                                    className='w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm min-h-[50px] font-mono'
-                                    value={inputs.jsonSchema || ''}
-                                    onChange={(e) => handleInputChange('jsonSchema', e.target.value)}
-                                    placeholder='Output will be texted here'
-                                />
-                            </div>
-                        )}
-
-
-                    </div>
 
                     <button
                         onClick={() => {

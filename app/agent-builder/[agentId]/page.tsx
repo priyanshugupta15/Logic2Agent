@@ -75,11 +75,14 @@ function AgentBuilderContent() {
     }, []);
 
 
-    // useEffect(() => {
-    //     if (isMounted && agentData?._id) {
-    //         SaveNodesAndEdges();
-    //     }
-    // }, [nodes, edges, agentData]);
+    useEffect(() => {
+        if (agentData) {
+            console.log("Hydrating Flow Data from DB:", agentData);
+            if (agentData.nodes) setNodes(agentData.nodes);
+            // Specifically check if edges exist in DB (even if empty array) to avoid overwriting with initialEdges if DB has saved data
+            if (agentData.edges !== undefined) setEdges(agentData.edges);
+        }
+    }, [agentData]);
 
 
     const SaveNodesAndEdges = async () => {
@@ -92,6 +95,7 @@ function AgentBuilderContent() {
                 edges,
             });
             toast.success("Flow saved successfully!");
+            console.log("Saved Nodes:", nodes.length, "Edges:", edges.length);
             console.log(result);
         } catch (error) {
             toast.error("Failed to save flow");
