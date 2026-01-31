@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Logic2Agent",
   description: "Logic2Agent - Autonomous AI Solutions",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 
