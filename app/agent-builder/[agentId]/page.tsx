@@ -171,7 +171,7 @@ function AgentBuilderContent() {
 
     return (
         <div className='h-screen flex flex-col'>
-            <Header agentName={agentData?.name} />
+            <Header agentName={agentData?.name} agentId={agentId as string} />
             <div className='flex-1 flex w-full overflow-hidden'>
                 <ToolPanel />
                 <div className='flex-1 h-full relative'>

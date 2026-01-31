@@ -5,9 +5,10 @@ import React from 'react'
 
 interface HeaderProps {
     agentName?: string;
+    agentId?: string;
 }
 
-function Header({ agentName }: HeaderProps) {
+function Header({ agentName, agentId }: HeaderProps) {
     return (
         <div className='flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800'>
             <div className='flex items-center gap-2'>
@@ -18,7 +19,9 @@ function Header({ agentName }: HeaderProps) {
             </div>
             <div>
                 <Button variant={'ghost'}> <Code2 /> Code </Button>
-                <Button variant={'ghost'}> <Play /> Preview </Button>
+                <Link href={`/agent-builder/${agentId}/preview`}>
+                    <Button variant={'ghost'}> <Play /> Preview </Button>
+                </Link>
                 <Button variant={'ghost'}> <Share /> Publish </Button>
             </div>
         </div>
