@@ -1,22 +1,42 @@
+"use client";
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { ThumbsUp } from 'lucide-react'
 
-function UserApprovalNode() {
+interface UserApprovalNodeProps {
+    selected?: boolean;
+}
+
+function UserApprovalNode({ selected }: UserApprovalNodeProps) {
     return (
-        <div className='flex items-center gap-3 bg-white dark:bg-gray-900 border-2 border-purple-500 rounded-xl p-4 shadow-sm min-w-[150px] relative transition-all hover:shadow-md'>
+        <div className={`flex flex-col gap-2 bg-white dark:bg-gray-900 border-2 rounded-xl p-4 shadow-sm min-w-[200px] relative transition-all hover:shadow-md ${selected ? 'border-purple-500 shadow-purple-500/20' : 'border-purple-500'}`}>
             <Handle
                 type="target"
                 position={Position.Left}
                 className="w-3 h-3 !bg-purple-500 border-2 border-white dark:border-gray-900"
             />
-            <div className='w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center'>
-                <ThumbsUp className='h-6 w-6 text-purple-500' />
+
+            <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center shrink-0'>
+                    <ThumbsUp className='h-6 w-6 text-purple-500' />
+                </div>
+                <div>
+                    <p className='text-xs text-gray-500 font-medium uppercase tracking-wider'>Human</p>
+                    <h2 className='text-lg font-bold'>User Approval</h2>
+                </div>
             </div>
-            <div>
-                <p className='text-xs text-gray-500 font-medium uppercase tracking-wider'>Human</p>
-                <h2 className='text-lg font-bold'>Approval</h2>
-            </div>
+
+            {selected && (
+                <div className='mt-2 space-y-2 animate-in fade-in zoom-in-95 duration-200'>
+                    <div className='bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center text-sm font-medium text-gray-600 dark:text-gray-300'>
+                        Approve
+                    </div>
+                    <div className='bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700 text-center text-sm font-medium text-gray-600 dark:text-gray-300'>
+                        Reject
+                    </div>
+                </div>
+            )}
+
             <Handle
                 type="source"
                 position={Position.Right}

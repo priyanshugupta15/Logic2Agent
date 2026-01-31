@@ -2,7 +2,8 @@
 import React from 'react'
 import Header from '../_component/Header'
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, Controls, MiniMap, reconnectEdge, useReactFlow, ReactFlowProvider } from '@xyflow/react';
+import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge, Background, Controls, MiniMap, reconnectEdge, useReactFlow, ReactFlowProvider, Panel } from '@xyflow/react';
+import { Loader2 } from 'lucide-react';
 import '@xyflow/react/dist/style.css';
 import StartNode from '../_component/StartNode';
 import AgentNode from '../_component/AgentNode';
@@ -12,6 +13,11 @@ import WhileNode from '../_component/WhileNode';
 import UserApprovalNode from '../_component/UserApprovalNode';
 import ApiNode from '../_component/ApiNode';
 import ToolPanel from '../_component/ToolPanel';
+import { useParams } from 'next/navigation';
+import { useMutation, useQuery } from 'convex/react';
+import { toast } from 'sonner';
+import { api } from '@/convex/_generated/api';
+import { UpdateAgentDetail } from '@/convex/agent';
 
 const initialNodes = [
     { id: 'n1', position: { x: 100, y: 100 }, data: { label: 'Node 1' }, type: 'StartNode' },
@@ -38,14 +44,45 @@ function AgentBuilderPage() {
 }
 
 function AgentBuilderContent() {
+    const { agentId } = useParams();
+    const agentData = useQuery(api.agent.getAgentById, { agentId: agentId as string });
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
     const [isMounted, setIsMounted] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const UpdateAgentDetail = useMutation(api.agent.UpdateAgentDetail);
     const edgeReconnectSuccessful = useRef(true);
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+
+    // useEffect(() => {
+    //     if (isMounted && agentData?._id) {
+    //         SaveNodesAndEdges();
+    //     }
+    // }, [nodes, edges, agentData]);
+
+
+    const SaveNodesAndEdges = async () => {
+        if (!agentData?._id) return;
+        setIsSaving(true);
+        try {
+            const result = await UpdateAgentDetail({
+                id: agentData._id,
+                nodes,
+                edges,
+            });
+            toast.success("Flow saved successfully!");
+            console.log(result);
+        } catch (error) {
+            toast.error("Failed to save flow");
+            console.error(error);
+        } finally {
+            setIsSaving(false);
+        }
+    }
 
     const onNodesChange = useCallback(
         (changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -58,7 +95,11 @@ function AgentBuilderContent() {
     const { screenToFlowPosition } = useReactFlow();
 
     const onConnect = useCallback(
-        (params: any) => setEdges((eds) => addEdge(params, eds)),
+        (params: any) => setEdges((eds) => {
+            const updatedEdges = addEdge(params, eds);
+            console.log(updatedEdges);
+            return updatedEdges;
+        }),
         [setEdges]
     );
 
@@ -113,7 +154,7 @@ function AgentBuilderContent() {
 
     return (
         <div className='h-screen flex flex-col'>
-            <Header />
+            <Header agentName={agentData?.name} />
             <div className='flex-1 flex w-full overflow-hidden'>
                 <ToolPanel />
                 <div className='flex-1 h-full relative'>
@@ -129,6 +170,7 @@ function AgentBuilderContent() {
                             onReconnectEnd={onReconnectEnd}
                             onDragOver={onDragOver}
                             onDrop={onDrop}
+                            deleteKeyCode={['Backspace', 'Delete']}
                             fitView
                             colorMode='system'
                             nodeTypes={nodeTypes}
@@ -136,6 +178,15 @@ function AgentBuilderContent() {
                             <MiniMap />
                             <Background />
                             <Controls />
+                            <Panel position="top-right">
+                                <button
+                                    onClick={SaveNodesAndEdges}
+                                    disabled={isSaving}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow-md transition-colors disabled:bg-blue-400 flex items-center gap-2"
+                                >
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                                </button>
+                            </Panel>
                         </ReactFlow>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">

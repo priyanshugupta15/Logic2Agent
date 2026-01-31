@@ -27,14 +27,21 @@ export default function Navbar() {
         >
             <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between h-full">
                 <Link href="/" className="flex items-center group p-0 m-0 h-full">
-                    <Image
-                        src="/hero.png"
-                        alt="Logic2Agent Logo"
-                        width={180}
-                        height={65}
-                        className="object-contain transition-transform group-hover:scale-105 m-0 p-0 max-h-[160%]"
-                        priority
-                    />
+                    <div className="flex items-center">
+                        <Image
+                            src="/hero.png"
+                            alt="Logic2Agent Logo"
+                            width={80}
+                            height={24}
+                            className="object-contain transition-transform group-hover:scale-105"
+                            priority
+                        />
+                        <div className="text-xl font-bold flex items-center -ml-1">
+                            <span className="text-blue-500 dark:text-blue-400">Logic</span>
+                            <span className="text-yellow-500">2</span>
+                            <span className="text-blue-500 dark:text-blue-400">Agent</span>
+                        </div>
+                    </div>
                 </Link>
 
 

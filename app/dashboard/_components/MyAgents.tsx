@@ -6,6 +6,7 @@ import { useConvex } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Agent } from '@/types/AgentType';
 import moment from 'moment';
+import Link from 'next/link';
 
 
 function MyAgents() {
@@ -27,13 +28,15 @@ function MyAgents() {
             {agentList && agentList.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {agentList.map((agent: Agent, index: number) => (
-                        <div key={index} className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                            <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mb-4">
-                                <GitBranch className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                        <Link href={'/agent-builder/' + agent.agentId} key={index}>
+                            <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                                <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mb-4">
+                                    <GitBranch className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                                </div>
+                                <h3 className="font-semibold text-lg mb-1">{agent.name}</h3>
+                                <p className="text-xs text-gray-500">{moment(agent._creationTime).fromNow()}</p>
                             </div>
-                            <h3 className="font-semibold text-lg mb-1">{agent.name}</h3>
-                            <p className="text-xs text-gray-500">{moment(agent._creationTime).fromNow()}</p>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             ) : (

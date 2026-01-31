@@ -11,15 +11,21 @@ function AiAgentTab() {
     const [agentList, setAgentList] = useState([]);
     const convex = useConvex();
 
-    useEffect(() => {
-        GetUserAgents();
-    }, [userDetail]);
+    const [mounted, setMounted] = useState(false);
 
     const GetUserAgents = async () => {
         if (!userDetail?._id) return;
         const result = await convex.query(api.agent.getAgentList, { userId: userDetail?._id });
         console.log(result);
     }
+
+    useEffect(() => {
+        setMounted(true);
+        GetUserAgents();
+    }, [userDetail]);
+
+    if (!mounted) return null;
+
     return (
         <div className='px-10 md:px-24 lg:px-32 mt-10'>
             <Tabs defaultValue="myagent" className="w-full">

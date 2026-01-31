@@ -53,9 +53,8 @@ export function AppSidebar() {
                         <Home className="text-primary h-6 w-6" />
                     </div>
                     <span className={`font-black tracking-tight ${open ? 'text-2xl' : 'hidden'} transition-all duration-200 ease-in-out cursor-default`}>
-                        <span className="text-blue-600">Logic</span>
-                        <span className="text-yellow-500">2</span>
-                        <span className="text-blue-600">Agent</span>
+                        <span className="text-blue-500">Dashboard</span>
+
                     </span>
                 </div>
             </SidebarHeader>

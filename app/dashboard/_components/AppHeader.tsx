@@ -11,15 +11,22 @@ function AppHeader() {
                 <SidebarTrigger className="h-8 w-8 text-gray-400 hover:text-primary transition-colors" />
 
                 <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block" />
-                <Link href="/" className="flex items-center h-full">
-                    <Image
-                        src="/hero.png"
-                        alt="Logic2Agent Logo"
-                        width={180}
-                        height={65}
-                        className="object-contain max-h-[160%] transition-transform hover:scale-105"
-                        priority
-                    />
+                <Link href="/" className="flex items-center group h-full">
+                    <div className="flex items-center gap-0">
+                        <Image
+                            src="/hero.png"
+                            alt="Logic2Agent Logo"
+                            width={80}
+                            height={24}
+                            className="object-contain transition-transform group-hover:scale-105"
+                            priority
+                        />
+                        <div className="text-xl font-bold flex items-center -ml-1">
+                            <span className="text-blue-500 dark:text-blue-400">Logic</span>
+                            <span className="text-yellow-500">2</span>
+                            <span className="text-blue-500 dark:text-blue-400">Agent</span>
+                        </div>
+                    </div>
                 </Link>
 
             </div>

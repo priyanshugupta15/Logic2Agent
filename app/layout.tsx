@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 
 
 import { ConvexClientProvider } from "./ConvexClientProvider";
+import { Toaster } from "sonner";
 import {
   ClerkProvider,
   SignInButton,
@@ -48,6 +49,7 @@ export default function RootLayout({
           <ConvexClientProvider>
             <Provider>
               {children}
+              <Toaster richColors />
             </Provider>
           </ConvexClientProvider>
         </ClerkProvider>

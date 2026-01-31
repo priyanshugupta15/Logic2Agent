@@ -1,10 +1,15 @@
+"use client";
 import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 import { Cloud } from 'lucide-react'
 
-function ApiNode() {
+interface ApiNodeProps {
+    selected?: boolean;
+}
+
+function ApiNode({ selected }: ApiNodeProps) {
     return (
-        <div className='flex items-center gap-3 bg-white dark:bg-gray-900 border-2 border-cyan-500 rounded-xl p-4 shadow-sm min-w-[150px] relative transition-all hover:shadow-md'>
+        <div className={`flex items-center gap-3 bg-white dark:bg-gray-900 border-2 rounded-xl p-4 shadow-sm min-w-[150px] relative transition-all hover:shadow-md ${selected ? 'border-cyan-500 shadow-cyan-500/20' : 'border-cyan-500'}`}>
             <Handle
                 type="target"
                 position={Position.Left}

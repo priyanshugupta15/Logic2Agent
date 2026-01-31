@@ -27,3 +27,28 @@ export const getAgentList = query({
         return result;
     }
 });
+
+export const getAgentById = query({
+    args: {
+        agentId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const result = await ctx.db.query("AgentTable")
+            .filter((q) => q.eq(q.field("agentId"), args.agentId))
+            .first();
+        return result;
+    }
+});
+export const UpdateAgentDetail = mutation({
+    args: {
+        id: v.id("AgentTable"),
+        nodes: v.any(),
+        edges: v.any(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.id, {
+            edges: args.edges,
+            nodes: args.nodes,
+        });
+    },
+});
