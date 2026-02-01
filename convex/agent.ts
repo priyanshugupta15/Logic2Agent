@@ -42,14 +42,17 @@ export const getAgentById = query({
 export const UpdateAgentDetail = mutation({
     args: {
         id: v.id("AgentTable"),
-        nodes: v.any(),
-        edges: v.any(),
+        nodes: v.optional(v.any()),
+        edges: v.optional(v.any()),
+        agentToolConfig: v.optional(v.any()),
     },
     handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, {
-            edges: args.edges,
-            nodes: args.nodes,
-        });
+        const updates: any = {};
+        if (args.nodes !== undefined) updates.nodes = args.nodes;
+        if (args.edges !== undefined) updates.edges = args.edges;
+        if (args.agentToolConfig !== undefined) updates.agentToolConfig = args.agentToolConfig;
+
+        await ctx.db.patch(args.id, updates);
     },
 });
 

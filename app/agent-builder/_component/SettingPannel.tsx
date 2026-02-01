@@ -39,7 +39,7 @@ function SettingPannel({ selectedNode, setNodes, onSave, agentName }: SettingPan
         );
     };
 
-    if (!selectedNode) {
+    if (!selectedNode || selectedNode.type === 'StartNode') {
         return null;
     }
 

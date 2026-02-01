@@ -8,4 +8,7 @@ export type Agent = {
     published: boolean;
     userId: Id<"UserTable">;
     config?: any;
+    nodes?: any;
+    edges?: any;
+    agentToolConfig?: any;
 }
