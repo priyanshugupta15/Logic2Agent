@@ -23,15 +23,16 @@ import IfElseNode from '../../_component/IfElseNode';
 import WhileNode from '../../_component/WhileNode';
 import UserApprovalNode from '../../_component/UserApprovalNode';
 import ApiNode from '../../_component/ApiNode';
+import { PublishModal } from './_components/PublishModal';
 
 const nodeTypes = {
-    StartNode: StartNode,
-    AgentNode: AgentNode,
-    EndNode: EndNode,
-    IfElseNode: IfElseNode,
-    WhileNode: WhileNode,
-    UserApprovalNode: UserApprovalNode,
-    ApiNode: ApiNode
+    StartNode,
+    AgentNode,
+    EndNode,
+    IfElseNode,
+    WhileNode,
+    UserApprovalNode,
+    ApiNode
 };
 
 function PreviewAgent() {
@@ -55,7 +56,10 @@ function PreviewAgent() {
     // 🔄 Reboot state
     const [isRebooting, setIsRebooting] = React.useState(false);
 
-    // 📜 Auto-scroll to bottom of chat
+    // � Publish Modal State
+    const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false);
+
+    // �📜 Auto-scroll to bottom of chat
     React.useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -298,7 +302,11 @@ function PreviewAgent() {
                         {isRebooting ? 'Rebooting...' : 'Reboot Agent'}
                     </Button>
 
-                    <Button variant='ghost' className='gap-2 text-gray-600 dark:text-gray-300 font-medium'>
+                    <Button
+                        variant='ghost'
+                        onClick={() => setIsPublishModalOpen(true)}
+                        className='gap-2 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all'
+                    >
                         <Code2 className='w-4 h-4' />
                         Code
                     </Button>
@@ -310,11 +318,22 @@ function PreviewAgent() {
                         </Button>
                     </Link>
 
-                    <Button className='gap-2 bg-black hover:bg-gray-800 text-white rounded-lg font-medium shadow-sm'>
+                    <Button
+                        onClick={() => setIsPublishModalOpen(true)}
+                        className='gap-2 bg-black hover:bg-gray-800 text-white rounded-lg font-medium shadow-sm active:scale-95 transition-all'
+                    >
                         Publish
                     </Button>
                 </div>
             </div>
+
+            {/* Publish Modal */}
+            <PublishModal
+                isOpen={isPublishModalOpen}
+                onClose={() => setIsPublishModalOpen(false)}
+                toolConfig={toolConfig}
+                agentName={agentData?.name || "AI Agent"}
+            />
 
             {/* Preview Content Area - 3:2 Split */}
             <div className='flex-1 flex overflow-hidden'>
@@ -332,9 +351,22 @@ function PreviewAgent() {
                                 fitView
                                 proOptions={{ hideAttribution: true }}
                             >
-                                <Background />
-                                <Controls />
-                                <MiniMap />
+                                <Background color='#333' variant={'dots' as any} gap={20} size={1} />
+                                <Controls className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700' />
+                                <MiniMap
+                                    style={{
+                                        backgroundColor: '#0a0a0a',
+                                        borderRadius: '8px',
+                                        border: '1px solid #333'
+                                    }}
+                                    maskColor="rgba(0, 0, 0, 0.1)"
+                                    nodeColor={(n) => {
+                                        if (n.type === 'StartNode') return '#3b82f6';
+                                        if (n.type === 'AgentNode') return '#10b981';
+                                        if (n.type === 'ApiNode') return '#f59e0b';
+                                        return '#888';
+                                    }}
+                                />
                             </ReactFlow>
                         </ReactFlowProvider>
                     ) : (

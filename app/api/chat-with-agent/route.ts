@@ -81,11 +81,21 @@ export async function POST(req: Request) {
         const response = await groq.chat.completions.create({
             model: "llama-3.3-70b-versatile",
             messages: chatMessages,
-            tools: groqTools.length > 0 ? groqTools : undefined,
-            tool_choice: "auto",
+            ...(groqTools.length > 0 ? {
+                tools: groqTools,
+                tool_choice: "auto"
+            } : {})
         });
 
         const initialMessage = response.choices[0].message;
+
+        // 🚨 Safety Check: If both are null, Groq might have returned an empty response
+        if (!initialMessage.content && (!initialMessage.tool_calls || initialMessage.tool_calls.length === 0)) {
+            console.error("⚠️ Groq returned an empty response (no content and no tool calls)");
+            return NextResponse.json({
+                reply: "The agent returned an empty response. This might be due to a complex workflow or rate limiting. Please try again."
+            });
+        }
 
         // 🛠️ Handle Tool Calls (The Execution Loop)
         if (initialMessage.tool_calls && initialMessage.tool_calls.length > 0) {
