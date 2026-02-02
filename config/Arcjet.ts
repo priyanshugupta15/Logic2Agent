@@ -15,4 +15,4 @@ const aj = arcjet({
     ],
 });
 
-export default aj;  
+export default aj;
