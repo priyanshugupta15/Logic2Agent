@@ -17,6 +17,21 @@ export default defineSchema({
         edges: v.optional(v.any()),
         agentToolConfig: v.optional(v.any()),
         published: v.boolean(),
+        starred: v.optional(v.boolean()),
         userId: v.id("UserTable"),
+    }),
+
+    ChatHistoryTable: defineTable({
+        agentId: v.string(),
+        sessionId: v.string(),
+        userId: v.id("UserTable"),
+        messages: v.array(v.object({
+            id: v.string(),
+            role: v.string(),
+            content: v.string(),
+            timestamp: v.number()
+        })),
+        createdAt: v.number(),
+        updatedAt: v.number()
     })
 });

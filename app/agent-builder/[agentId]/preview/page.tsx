@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import React from 'react'
 import { useMutation, useQuery } from 'convex/react';
 import { toast } from 'sonner';
+import { useUser } from '@clerk/nextjs';
 
 interface ChatMessage {
     role: 'user' | 'agent' | 'system';
@@ -69,8 +70,23 @@ function PreviewAgent() {
     // 🔄 Reboot state
     const [isRebooting, setIsRebooting] = React.useState(false);
 
-    // � Publish Modal State
+    // 📝 Publish Modal State
     const [isPublishModalOpen, setIsPublishModalOpen] = React.useState(false);
+
+    // 💾 Chat History State
+    const [sessionId, setSessionId] = React.useState<string>('');
+    const { user } = useUser();
+    const userData = useQuery(api.user.GetUser, user?.primaryEmailAddress?.emailAddress ? { email: user.primaryEmailAddress.emailAddress } : 'skip');
+
+    // Chat history mutations and queries
+    const saveMessageMutation = useMutation(api.chatHistory.saveMessage);
+    const clearSessionMutation = useMutation(api.chatHistory.clearSession);
+    const sessionHistory = useQuery(
+        api.chatHistory.getSessionHistory,
+        sessionId && userData?._id && agentId
+            ? { agentId: agentId as string, sessionId, userId: userData._id }
+            : 'skip'
+    );
 
     // �📜 Auto-scroll to bottom of chat
     React.useEffect(() => {
@@ -92,6 +108,30 @@ function PreviewAgent() {
             GenerateToolConfig(config)
         }
     }, [config])
+
+    // 🆔 Initialize session ID on mount
+    React.useEffect(() => {
+        const storedSessionId = sessionStorage.getItem(`chat-session-${agentId}`);
+        if (storedSessionId) {
+            setSessionId(storedSessionId);
+        } else {
+            const newSessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            sessionStorage.setItem(`chat-session-${agentId}`, newSessionId);
+            setSessionId(newSessionId);
+        }
+    }, [agentId]);
+
+    // 📚 Load chat history when session is ready
+    React.useEffect(() => {
+        if (sessionHistory && sessionHistory.length > 0 && messages.length === 0) {
+            const loadedMessages: ChatMessage[] = sessionHistory.map((msg: any) => ({
+                id: msg.id,
+                role: msg.role as 'user' | 'agent' | 'system',
+                content: msg.content
+            }));
+            setMessages(loadedMessages);
+        }
+    }, [sessionHistory]);
 
     // 📡 Call API to generate tool config
     const GenerateToolConfig = async (inputConfig: any, silent = true) => {
@@ -183,6 +223,26 @@ function PreviewAgent() {
         setUserInput('');
         setIsTyping(true);
 
+        // 💾 Save user message to database if chat history is enabled
+        const chatHistoryEnabled = toolConfig?.agents?.some((agent: any) => agent.includeChatHistory);
+        if (chatHistoryEnabled && userData?._id && sessionId) {
+            try {
+                await saveMessageMutation({
+                    agentId: agentId as string,
+                    sessionId,
+                    userId: userData._id,
+                    message: {
+                        id: userMsg.id,
+                        role: userMsg.role,
+                        content: userMsg.content,
+                        timestamp: Date.now()
+                    }
+                });
+            } catch (error) {
+                console.error("Failed to save user message:", error);
+            }
+        }
+
         try {
             const response = await fetch('/api/chat-with-agent', {
                 method: 'POST',
@@ -199,12 +259,39 @@ function PreviewAgent() {
                 toast.info("Groq limit reached. Switched to OpenAI for this response.");
             }
 
-            if (data.reply) {
-                setMessages(prev => [...prev, {
-                    id: (Date.now() + 1).toString(),
-                    role: 'agent',
-                    content: data.reply
-                }]);
+            // Handle both successful replies and error responses
+            const agentContent = data.reply || data.error || "I apologize, but I couldn't generate a response. Please try again.";
+
+            const agentMsg: ChatMessage = {
+                id: (Date.now() + 1).toString(),
+                role: data.error ? 'system' : 'agent',
+                content: agentContent
+            };
+
+            setMessages(prev => [...prev, agentMsg]);
+
+            // 💾 Save agent message to database if chat history is enabled
+            if (chatHistoryEnabled && userData?._id && sessionId && !data.error) {
+                try {
+                    await saveMessageMutation({
+                        agentId: agentId as string,
+                        sessionId,
+                        userId: userData._id,
+                        message: {
+                            id: agentMsg.id,
+                            role: agentMsg.role,
+                            content: agentMsg.content,
+                            timestamp: Date.now()
+                        }
+                    });
+                } catch (error) {
+                    console.error("Failed to save agent message:", error);
+                }
+            }
+
+            // Show error toast if there was an error
+            if (data.error) {
+                toast.error("Agent Error: " + data.error);
             }
         } catch (error) {
             console.error("Chat Error:", error);
@@ -215,6 +302,24 @@ function PreviewAgent() {
             }]);
         } finally {
             setIsTyping(false);
+        }
+    }
+
+    // 🗑️ Clear Chat History
+    const handleClearHistory = async () => {
+        if (!userData?._id || !sessionId) return;
+
+        try {
+            await clearSessionMutation({
+                agentId: agentId as string,
+                sessionId,
+                userId: userData._id
+            });
+            setMessages([]);
+            toast.success("Chat history cleared!");
+        } catch (error) {
+            console.error("Failed to clear history:", error);
+            toast.error("Failed to clear history");
         }
     }
 
@@ -322,15 +427,20 @@ function PreviewAgent() {
     }
 
     return (
-        <div className='h-screen w-full flex flex-col bg-white dark:bg-gray-950'>
+        <div className='h-screen w-full flex flex-col bg-[#0a0a0f]'>
             {/* Header */}
-            <div className='h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6'>
+            <div className='h-16 border-b border-white/5 flex items-center justify-between px-6 bg-black/40 backdrop-blur-xl'>
                 {/* Left: Back Navigation */}
                 <div className='flex items-center gap-4'>
-                    <Link href={`/agent-builder/${agentId}`} className='p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors'>
-                        <ChevronLeft className='w-6 h-6' />
+                    <Link
+                        href={`/agent-builder/${agentId}`}
+                        className='group flex items-center justify-center w-10 h-10 hover:bg-primary/10 border border-white/5 hover:border-primary/30 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]'
+                    >
+                        <ChevronLeft className='h-5 w-5 text-gray-400 group-hover:text-primary transition-colors' />
                     </Link>
-                    <h1 className='text-xl font-bold'>{agentData?.name || 'Loading...'}</h1>
+                    <h1 className='text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500'>
+                        {agentData?.name || 'Loading...'}
+                    </h1>
                 </div>
 
                 {/* Right: Actions */}
@@ -339,7 +449,7 @@ function PreviewAgent() {
                         variant='outline'
                         onClick={handleReboot}
                         disabled={isRebooting || !config}
-                        className='gap-2 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        className='gap-2 bg-primary/10 hover:bg-primary/15 text-primary hover:text-cyan-300 border border-primary/30 shadow-[0_0_15px_rgba(6,182,212,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all font-semibold rounded-xl px-4'
                     >
                         <RefreshCw className={`w-4 h-4 ${isRebooting ? 'animate-spin' : ''}`} />
                         {isRebooting ? 'Rebooting...' : 'Reboot Agent'}
@@ -348,14 +458,14 @@ function PreviewAgent() {
                     <Button
                         variant='ghost'
                         onClick={() => setIsPublishModalOpen(true)}
-                        className='gap-2 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all'
+                        className='gap-2 text-gray-300 font-medium hover:bg-white/5 border border-white/5 hover:border-white/10 rounded-xl active:scale-95 transition-all'
                     >
                         <Code2 className='w-4 h-4' />
                         Code
                     </Button>
 
                     <Link href={`/agent-builder/${agentId}`}>
-                        <Button className='gap-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium shadow-sm'>
+                        <Button className='gap-2 bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 hover:border-white/20 rounded-xl font-medium shadow-sm transition-all'>
                             <X className='w-4 h-4' />
                             Close preview
                         </Button>
@@ -363,7 +473,7 @@ function PreviewAgent() {
 
                     <Button
                         onClick={() => setIsPublishModalOpen(true)}
-                        className='gap-2 bg-black hover:bg-gray-800 text-white rounded-lg font-medium shadow-sm active:scale-95 transition-all'
+                        className='gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-semibold shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] active:scale-95 transition-all px-5'
                     >
                         Publish
                     </Button>
@@ -381,7 +491,7 @@ function PreviewAgent() {
             {/* Preview Content Area - 3:2 Split */}
             <div className='flex-1 flex overflow-hidden'>
                 {/* Left Side: Graph (60%) */}
-                <div className='flex-[3] relative border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900'>
+                <div className='flex-[3] relative border-r border-white/5 bg-black/20 backdrop-blur-sm'>
                     {agentData ? (
                         <ReactFlowProvider>
                             <ReactFlow
@@ -394,20 +504,21 @@ function PreviewAgent() {
                                 fitView
                                 proOptions={{ hideAttribution: true }}
                             >
-                                <Background color='#333' variant={'dots' as any} gap={20} size={1} />
-                                <Controls className='bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700' />
+                                <Background color='#06b6d4' variant={'dots' as any} gap={20} size={1} />
+                                <Controls className='bg-black/40 backdrop-blur-xl border-white/10 [&_button]:bg-white/5 [&_button]:border-white/10 [&_button]:text-gray-300 [&_button:hover]:bg-primary/20 [&_button:hover]:text-primary' />
                                 <MiniMap
                                     style={{
-                                        backgroundColor: '#0a0a0a',
-                                        borderRadius: '8px',
-                                        border: '1px solid #333'
+                                        backgroundColor: '#0a0a0f',
+                                        borderRadius: '12px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        backdropFilter: 'blur(10px)'
                                     }}
-                                    maskColor="rgba(0, 0, 0, 0.1)"
+                                    maskColor="rgba(0, 0, 0, 0.2)"
                                     nodeColor={(n) => {
-                                        if (n.type === 'StartNode') return '#3b82f6';
-                                        if (n.type === 'AgentNode') return '#10b981';
-                                        if (n.type === 'ApiNode') return '#f59e0b';
-                                        return '#888';
+                                        if (n.type === 'StartNode') return '#06b6d4';
+                                        if (n.type === 'AgentNode') return '#3b82f6';
+                                        if (n.type === 'ApiNode') return '#eab308';
+                                        return '#6b7280';
                                     }}
                                 />
                             </ReactFlow>
@@ -423,31 +534,43 @@ function PreviewAgent() {
                 </div>
 
                 {/* Right Side: Chat UI (40%) */}
-                <div className='flex-[2] bg-white dark:bg-gray-950 flex flex-col relative overflow-hidden'>
+                <div className='flex-[2] bg-[#0a0a0f] flex flex-col relative overflow-hidden'>
                     {/* Chat Header */}
-                    <div className='p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/50'>
+                    <div className='p-4 border-b border-white/5 flex items-center justify-between bg-black/40 backdrop-blur-xl'>
                         <div className='flex items-center gap-2'>
-                            <div className='w-2 h-2 rounded-full bg-green-500 animate-pulse'></div>
-                            <span className='text-sm font-semibold text-gray-700 dark:text-gray-300'>Agent Active</span>
+                            <div className='w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.5)]'></div>
+                            <span className='text-sm font-semibold text-gray-300'>Agent Active</span>
                         </div>
-                        {toolConfig && (
-                            <span className='text-xs text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full font-medium'>
-                                Groq Powered
-                            </span>
-                        )}
+                        <div className='flex items-center gap-2'>
+                            {toolConfig?.agents?.some((agent: any) => agent.includeChatHistory) && messages.length > 0 && (
+                                <Button
+                                    variant='ghost'
+                                    size='sm'
+                                    onClick={handleClearHistory}
+                                    className='text-xs text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors'
+                                >
+                                    Clear History
+                                </Button>
+                            )}
+                            {toolConfig && (
+                                <span className='text-xs text-primary bg-primary/10 px-3 py-1 rounded-full font-medium border border-primary/20'>
+                                    Groq Powered
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Message Area */}
                     <div
                         ref={scrollRef}
-                        className='flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800'
+                        className='flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth'
                     >
                         {messages.length === 0 && (
                             <div className='h-full flex flex-col items-center justify-center text-center p-8'>
-                                <div className='w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4'>
-                                    <Send className='w-8 h-8 text-gray-300' />
+                                <div className='w-16 h-16 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(6,182,212,0.2)]'>
+                                    <Send className='w-8 h-8 text-primary' />
                                 </div>
-                                <h3 className='text-lg font-bold text-gray-800 dark:text-gray-200 mb-1'>Ready to assist</h3>
+                                <h3 className='text-lg font-bold text-gray-200 mb-1'>Ready to assist</h3>
                                 <p className='text-sm text-gray-500 max-w-[200px]'>
                                     Send a message to start interacting with your AI agent.
                                 </p>
@@ -460,11 +583,11 @@ function PreviewAgent() {
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm ${msg.role === 'user'
-                                        ? 'bg-black text-white rounded-tr-none'
+                                    className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-lg transition-all whitespace-pre-line ${msg.role === 'user'
+                                        ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-tr-none shadow-[0_0_20px_rgba(6,182,212,0.3)]'
                                         : msg.role === 'system'
-                                            ? 'bg-red-50 text-red-600 border border-red-100 italic'
-                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-none'
+                                            ? 'bg-red-500/10 text-red-400 border border-red-500/20 italic backdrop-blur-sm'
+                                            : 'bg-white/5 backdrop-blur-sm text-gray-200 rounded-tl-none border border-white/10'
                                         }`}
                                 >
                                     {msg.content}
@@ -474,17 +597,17 @@ function PreviewAgent() {
 
                         {isTyping && (
                             <div className='flex justify-start'>
-                                <div className='bg-gray-100 dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none flex items-center gap-1 shadow-sm'>
-                                    <div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]'></div>
-                                    <div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]'></div>
-                                    <div className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce'></div>
+                                <div className='bg-white/5 backdrop-blur-sm border border-white/10 p-3 rounded-2xl rounded-tl-none flex items-center gap-1 shadow-lg'>
+                                    <div className='w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                                    <div className='w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                                    <div className='w-1.5 h-1.5 bg-primary rounded-full animate-bounce'></div>
                                 </div>
                             </div>
                         )}
                     </div>
 
                     {/* Input Area */}
-                    <div className='p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950'>
+                    <div className='p-4 border-t border-white/5 bg-black/40 backdrop-blur-xl'>
                         <div className='relative flex items-center gap-2'>
                             <input
                                 type="text"
@@ -493,17 +616,17 @@ function PreviewAgent() {
                                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                 placeholder={!toolConfig ? "Analyzing workflow..." : "Ask your agent anything..."}
                                 disabled={!toolConfig || isTyping}
-                                className='flex-1 h-12 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 px-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-black/5 dark:focus:ring-white/5 transition-all'
+                                className='flex-1 h-12 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 px-4 pr-12 text-sm text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all'
                             />
                             <button
                                 onClick={handleSendMessage}
                                 disabled={!toolConfig || isTyping || !userInput.trim()}
-                                className='absolute right-2 w-8 h-8 flex items-center justify-center bg-black hover:bg-gray-800 text-white rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-black'
+                                className='absolute right-2 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-lg transition-all disabled:opacity-30 disabled:hover:from-blue-600 disabled:hover:to-cyan-600 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
                             >
                                 {isTyping ? <Loader2 className='w-4 h-4 animate-spin' /> : <Send className='w-4 h-4' />}
                             </button>
                         </div>
-                        <p className='text-[10px] text-gray-400 mt-2 text-center uppercase tracking-widest font-bold opacity-60'>
+                        <p className='text-[10px] text-gray-500 mt-2 text-center uppercase tracking-widest font-bold opacity-60'>
                             Agent Preview Instance
                         </p>
                     </div>

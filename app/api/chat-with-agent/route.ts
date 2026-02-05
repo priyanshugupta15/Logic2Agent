@@ -2,11 +2,43 @@ import { NextResponse } from "next/server";
 import { groq } from "@/config/GroqModel";
 import OpenAI from "openai";
 
-// 🧹 Fail-safe: Strip all reasoning tags from AI output
+// 🧹 Fail-safe: Strip all reasoning tags and internal flags from AI output
 function cleanResponse(text: string): string {
     if (!text) return "Done.";
+
+    let cleaned = text;
+
     // Remove anything between <think> and </think> (including the tags)
-    return text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
+
+    // Remove MISSING_INFO flags and similar internal markers
+    cleaned = cleaned.replace(/MISSING_INFO\s*=\s*(true|false)\s*/gi, "");
+
+    // Remove other common internal reasoning patterns
+    cleaned = cleaned.replace(/\[INTERNAL:[\s\S]*?\]/gi, "");
+    cleaned = cleaned.replace(/\{reasoning:[\s\S]*?\}/gi, "");
+
+    // Try to parse as JSON and extract main content
+    try {
+        const parsed = JSON.parse(cleaned);
+        if (typeof parsed === 'object' && parsed !== null) {
+            const contentFields = ['itinerary', 'response', 'content', 'message', 'answer', 'result'];
+            for (const field of contentFields) {
+                if (parsed[field] && typeof parsed[field] === 'string') {
+                    cleaned = parsed[field];
+                    break;
+                }
+            }
+        }
+    } catch (e) {
+        // Not JSON, continue
+    }
+
+    // Clean up excessive whitespace but preserve intentional line breaks
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n"); // Max 2 consecutive newlines
+    cleaned = cleaned.trim();
+
+    return cleaned || "I'm processing your request. Could you please provide more details?";
 }
 
 export async function POST(req: Request) {
@@ -44,7 +76,10 @@ export async function POST(req: Request) {
     } catch (error: any) {
         console.error("Chat API Route Error:", error);
         return NextResponse.json(
-            { error: error.message || "Internal Server Error" },
+            {
+                error: error.message || "Internal Server Error",
+                reply: `I encountered an error: ${error.message || "Internal Server Error"}. Please try again.`
+            },
             { status: 500 }
         );
     }
@@ -93,9 +128,9 @@ async function handleGroqChat(messages: any[], toolConfig: any) {
        - Bad: "- Temp: 20C - Condition: Mist"
        - Good: "It's a misty 20°C in Bhopal right now! 🌤️"
     2. **ZERO TECHNICAL JARGON**: No pressure, visibility, or wind speed unless explicitly asked.
-    3. **NO REASONING LEAKS**: NEVER include <think>, empty tags, or internal monologues.
+    3. **NO REASONING LEAKS**: NEVER include <think>, MISSING_INFO=, empty tags, or ANY internal flags/monologues in your response.
     4. **COMMON SENSE**: Assume the most famous location (e.g., Delhi, India) for ambiguous names.
-    5. **ONE SENTENCE**: Keep most answers to a single, high-impact sentence.
+    5. **PROPER FORMATTING**: Use line breaks (\\n) to separate different sections, days, or topics for readability. Make responses user-friendly and well-structured.
     6. **STRICT DOMAIN**: ONLY answer questions related to your specific purpose (${toolConfig.systemPrompt}). If the user asks about unrelated topics (trivia, world leaders, currency, general knowledge), politely decline and state your specific expertise.
     
     ### WORKFLOW CONTEXT:
@@ -230,9 +265,9 @@ async function handleOpenAiChat(messages: any[], toolConfig: any) {
        - Bad: "- Temp: 20C - Condition: Mist"
        - Good: "It's a misty 20°C in Bhopal right now! 🌤️"
     2. **ZERO TECHNICAL JARGON**: No pressure, visibility, or wind speed unless explicitly asked.
-    3. **NO REASONING LEAKS**: NEVER include <think>, empty tags, or internal monologues.
+    3. **NO REASONING LEAKS**: NEVER include <think>, MISSING_INFO=, empty tags, or ANY internal flags/monologues in your response.
     4. **COMMON SENSE**: Assume the most famous location (e.g., Delhi, India) for ambiguous names.
-    5. **ONE SENTENCE**: Keep most answers to a single, high-impact sentence.
+    5. **PROPER FORMATTING**: Use line breaks (\\n) to separate different sections, days, or topics for readability. Make responses user-friendly and well-structured.
     6. **STRICT DOMAIN**: ONLY answer questions related to your specific purpose (${toolConfig.systemPrompt}). If the user asks about unrelated topics (trivia, world leaders, currency, general knowledge), politely decline and state your specific expertise.
     
     ### WORKFLOW CONTEXT:

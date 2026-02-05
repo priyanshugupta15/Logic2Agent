@@ -12,12 +12,6 @@ import IfElseNode from '../_component/IfElseNode';
 import WhileNode from '../_component/WhileNode';
 import UserApprovalNode from '../_component/UserApprovalNode';
 import ApiNode from '../_component/ApiNode';
-import NoteNode from '../_component/NoteNode';
-import FileSearchNode from '../_component/FileSearchNode';
-import GuardrailsNode from '../_component/GuardrailsNode';
-import MCPNode from '../_component/MCPNode';
-import TransformNode from '../_component/TransformNode';
-import SetStateNode from '../_component/SetStateNode';
 import ToolPanel from '../_component/ToolPanel';
 import SettingPannel from '../_component/SettingPannel';
 import { useParams } from 'next/navigation';
@@ -39,13 +33,7 @@ const nodeTypes = {
     IfElseNode: IfElseNode,
     WhileNode: WhileNode,
     UserApprovalNode: UserApprovalNode,
-    ApiNode: ApiNode,
-    NoteNode: NoteNode,
-    FileSearchNode: FileSearchNode,
-    GuardrailsNode: GuardrailsNode,
-    MCPNode: MCPNode,
-    TransformNode: TransformNode,
-    SetStateNode: SetStateNode
+    ApiNode: ApiNode
 };
 
 function AgentBuilderPage() {
@@ -203,7 +191,7 @@ function AgentBuilderContent() {
     );
 
     return (
-        <div className='h-screen flex flex-col'>
+        <div className='h-screen flex flex-col bg-gradient-to-br from-[oklch(0.08_0.02_240)] via-[oklch(0.1_0.03_240)] to-[oklch(0.08_0.02_240)]'>
             <Header agentName={agentData?.name} agentId={agentId as string} />
             <div className='flex-1 flex w-full overflow-hidden'>
                 <ToolPanel />
@@ -224,25 +212,43 @@ function AgentBuilderContent() {
                             defaultViewport={{ x: 0, y: 0, zoom: 0.6 }}
                             minZoom={0.1}
                             maxZoom={2}
-                            colorMode='system'
+                            colorMode='dark'
                             nodeTypes={nodeTypes}
                         >
-                            <MiniMap />
-                            <Background />
-                            <Controls />
+                            <MiniMap
+                                className='!bg-black/40 !border !border-white/10 !rounded-xl'
+                                maskColor='rgba(0, 0, 0, 0.6)'
+                                nodeColor={(node) => {
+                                    switch (node.type) {
+                                        case 'StartNode': return '#60a5fa';
+                                        case 'AgentNode': return '#34d399';
+                                        case 'EndNode': return '#fb7185';
+                                        case 'IfElseNode': return '#fbbf24';
+                                        case 'WhileNode': return '#818cf8';
+                                        case 'UserApprovalNode': return '#c084fc';
+                                        case 'ApiNode': return '#22d3ee';
+                                        default: return '#6b7280';
+                                    }
+                                }}
+                            />
+                            <Background className='!bg-transparent' gap={16} size={1} color='rgba(255, 255, 255, 0.05)' />
+                            <Controls className='!bg-black/40 !border !border-white/10 !rounded-xl [&>button]:!bg-black/20 [&>button]:!border-white/5 [&>button:hover]:!bg-primary/20 [&>button]:!text-gray-300' />
                             <Panel position="top-right">
                                 <button
                                     onClick={SaveNodesAndEdges}
                                     disabled={isSaving}
-                                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 shadow-md transition-colors disabled:bg-blue-400 flex items-center gap-2"
+                                    className="bg-primary/15 hover:bg-primary/25 text-primary border border-primary/30 px-6 py-3 rounded-xl font-semibold shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_30px_rgba(6,182,212,0.25)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
-                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Flow"}
                                 </button>
                             </Panel>
                         </ReactFlow>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                            <p className="text-gray-500 font-medium">Loading workspace...</p>
+                            <div className='flex flex-col items-center gap-3'>
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                <p className="text-gray-400 font-medium">Loading workspace...</p>
+                            </div>
                         </div>
                     )}
                     <SettingPannel selectedNode={selectedNode} setNodes={setNodes} onSave={SaveNodesAndEdges} agentName={agentData?.name} />

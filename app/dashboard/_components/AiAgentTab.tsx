@@ -1,5 +1,5 @@
 "use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 import React, { useContext, useEffect, useState } from 'react'
 import MyAgents from './MyAgents'
 import { UserDetailContext } from '@/context/UserDetailContext';
@@ -16,15 +16,13 @@ function AiAgentTab() {
     if (!mounted) return null;
 
     return (
-        <div id="ai-agents" className='px-10 md:px-24 lg:px-32 mt-10 scroll-mt-24'>
-            <Tabs defaultValue="myagent" className="w-full">
-                <TabsList>
-                    <TabsTrigger value="myagent">My Agents</TabsTrigger>
-                    <TabsTrigger value="template">Templates</TabsTrigger>
-                </TabsList>
-                <TabsContent value="myagent"><MyAgents /></TabsContent>
-                <TabsContent value="template">Templates</TabsContent>
-            </Tabs>
+        <div id="ai-agents" className='px-4 md:px-12 lg:px-24 mt-12 mb-20 scroll-mt-24'>
+            <div className="w-full">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-100 to-blue-400">My Agents</h2>
+                </div>
+                <MyAgents />
+            </div>
         </div>
     )
 }

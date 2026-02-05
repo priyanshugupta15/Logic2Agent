@@ -12,6 +12,7 @@ export const createAgent = mutation({
             name: args.name,
             agentId: args.agentId,
             published: false,
+            starred: false,
             userId: args.userId,
         });
         return result;
@@ -62,5 +63,15 @@ export const deleteAgent = mutation({
     },
     handler: async (ctx, args) => {
         await ctx.db.delete(args.agentId);
+    },
+});
+
+export const ToggleStar = mutation({
+    args: {
+        id: v.id("AgentTable"),
+        starred: v.boolean(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.db.patch(args.id, { starred: args.starred });
     },
 });

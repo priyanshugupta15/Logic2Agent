@@ -6,6 +6,7 @@ export type Agent = {
     name: string;
     agentId: string;
     published: boolean;
+    starred?: boolean;
     userId: Id<"UserTable">;
     config?: any;
     nodes?: any;

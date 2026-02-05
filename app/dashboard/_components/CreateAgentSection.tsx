@@ -56,13 +56,21 @@ function CreateAgentSection() {
 
     return (
         <div className='flex flex-col items-center justify-center p-8 text-center'>
-            <h2 className='font-bold text-3xl mb-2 text-white'>Create AI Agent</h2>
-            <p className='text-md text-gray-400 mb-8'>Build a AI Agent workflow with custom logic and tools</p>
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-secondary/10 border border-secondary/20 backdrop-blur-md text-secondary text-xs font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(59,130,246,0.15)] mb-6">
+                <span>Logic2Agent Workspace</span>
+            </div>
+
+            <h2 className='font-black text-4xl sm:text-5xl mb-4 text-white tracking-tight drop-shadow-md'>
+                Create <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-cyan-300 to-secondary animate-pulse">AI Agent</span>
+            </h2>
+            <p className='text-lg text-muted-foreground mb-10 max-w-lg mx-auto leading-relaxed'>
+                Build a new visual agent workflow with custom reasoning logic and tools.
+            </p>
 
             {mounted ? <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                 <DialogTrigger asChild>
-                    <Button size={'lg'} onClick={() => setOpenDialog(true)} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 font-medium px-8 py-6 text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95">
-                        <Plus /> Create Agent
+                    <Button size={'lg'} onClick={() => setOpenDialog(true)} className="h-14 px-8 text-lg rounded-2xl bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white gap-3 font-bold shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] transition-all hover:-translate-y-1 active:scale-95 border-0">
+                        <Plus className="w-6 h-6" /> Create New Agent
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -82,8 +90,8 @@ function CreateAgentSection() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog> :
-                <Button size={'lg'} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 font-medium px-8 py-6 text-lg rounded-xl shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95">
-                    <Plus /> Create Agent
+                <Button size={'lg'} onClick={() => setOpenDialog(true)} className="h-14 px-8 text-lg rounded-2xl bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white gap-3 font-bold shadow-[0_10px_40px_-10px_rgba(6,182,212,0.5)] transition-all hover:-translate-y-1 active:scale-95 border-0">
+                    <Plus className="w-6 h-6" /> Create New Agent
                 </Button>
             }
         </div>

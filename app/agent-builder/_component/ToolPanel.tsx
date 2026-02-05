@@ -1,5 +1,5 @@
 import React from 'react'
-import { Bot, Square, StickyNote, FileSearch, ShieldCheck, Blocks, Split, Repeat, ThumbsUp, Shuffle, Database, Cloud } from 'lucide-react'
+import { Bot, Square, StickyNote, FileSearch, ShieldCheck, Blocks, Split, Repeat, ThumbsUp, Shuffle, Database, Cloud, Play } from 'lucide-react'
 
 interface ToolItem {
     name: string;
@@ -21,28 +21,28 @@ const toolCategories: ToolCategory[] = [
         category: 'Core',
         tools: [
             {
+                name: 'Start',
+                type: 'StartNode',
+                icon: Play,
+                description: 'Begin the workflow',
+                color: 'text-blue-400',
+                bgColor: 'bg-blue-500/10'
+            },
+            {
                 name: 'Agent',
                 type: 'AgentNode',
                 icon: Bot,
                 description: 'AI model to process data',
-                color: 'text-green-500',
-                bgColor: 'bg-green-500/10'
+                color: 'text-emerald-400',
+                bgColor: 'bg-emerald-500/10'
             },
             {
                 name: 'End',
                 type: 'EndNode',
                 icon: Square,
                 description: 'Terminate the workflow',
-                color: 'text-red-500',
-                bgColor: 'bg-red-500/10'
-            },
-            {
-                name: 'Note',
-                type: 'NoteNode',
-                icon: StickyNote,
-                description: 'Add comments or documentation',
-                color: 'text-amber-500',
-                bgColor: 'bg-amber-500/10'
+                color: 'text-rose-400',
+                bgColor: 'bg-rose-500/10'
             }
         ]
     },
@@ -50,36 +50,11 @@ const toolCategories: ToolCategory[] = [
         category: 'Tools',
         tools: [
             {
-                name: 'File Search',
-                type: 'FileSearchNode',
-                icon: FileSearch,
-                description: 'Search knowledge base',
-                color: 'text-orange-500',
-                bgColor: 'bg-orange-500/10'
-            },
-            {
-                name: 'Guardrails',
-                type: 'GuardrailsNode',
-                icon: ShieldCheck,
-                description: 'AI safety constraints',
-                color: 'text-rose-500',
-                bgColor: 'bg-rose-500/10'
-            },
-            {
-                name: 'MCP',
-                type: 'MCPNode',
-                icon: Blocks,
-                description: 'Model Context Protocol',
-                color: 'text-violet-500',
-                bgColor: 'bg-violet-500/10',
-                beta: true
-            },
-            {
                 name: 'API',
                 type: 'ApiNode',
                 icon: Cloud,
                 description: 'Call external services',
-                color: 'text-cyan-500',
+                color: 'text-cyan-400',
                 bgColor: 'bg-cyan-500/10'
             }
         ]
@@ -92,45 +67,24 @@ const toolCategories: ToolCategory[] = [
                 type: 'IfElseNode',
                 icon: Split,
                 description: 'Conditional branching',
-                color: 'text-yellow-500',
-                bgColor: 'bg-yellow-500/10'
+                color: 'text-amber-400',
+                bgColor: 'bg-amber-500/10'
             },
             {
                 name: 'While',
                 type: 'WhileNode',
                 icon: Repeat,
                 description: 'Loop through data',
-                color: 'text-blue-500',
-                bgColor: 'bg-blue-500/10'
+                color: 'text-indigo-400',
+                bgColor: 'bg-indigo-500/10'
             },
             {
                 name: 'User Approval',
                 type: 'UserApprovalNode',
                 icon: ThumbsUp,
                 description: 'Wait for user input',
-                color: 'text-purple-500',
+                color: 'text-purple-400',
                 bgColor: 'bg-purple-500/10'
-            }
-        ]
-    },
-    {
-        category: 'Data',
-        tools: [
-            {
-                name: 'Transform',
-                type: 'TransformNode',
-                icon: Shuffle,
-                description: 'Transform data format',
-                color: 'text-pink-500',
-                bgColor: 'bg-pink-500/10'
-            },
-            {
-                name: 'Set State',
-                type: 'SetStateNode',
-                icon: Database,
-                description: 'Store variables & state',
-                color: 'text-teal-500',
-                bgColor: 'bg-teal-500/10'
             }
         ]
     }
@@ -143,34 +97,43 @@ function ToolPanel() {
     };
 
     return (
-        <aside className='w-72 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-4 flex flex-col gap-4 overflow-y-auto'>
-            <div>
-                <h2 className='text-lg font-bold mb-1 flex items-center gap-2'>Agent Tools</h2>
-                <p className='text-sm text-gray-500 mb-4'>Drag and drop nodes to the canvas</p>
+        <aside className='w-80 border-r border-white/5 bg-black/40 backdrop-blur-xl p-5 flex flex-col gap-6 overflow-y-auto'>
+            <div className='space-y-2'>
+                <div className='flex items-center gap-2'>
+                    <div className='bg-primary/10 border border-primary/20 p-1.5 rounded-lg'>
+                        <Blocks className='h-4 w-4 text-primary' />
+                    </div>
+                    <h2 className='text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300'>
+                        Agent Tools
+                    </h2>
+                </div>
+                <p className='text-sm text-gray-400 pl-1'>Drag and drop nodes to the canvas</p>
             </div>
 
             {toolCategories.map((category, catIndex) => (
-                <div key={catIndex} className='flex flex-col gap-2'>
-                    <h3 className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>{category.category}</h3>
-                    <div className='flex flex-col gap-2'>
+                <div key={catIndex} className='flex flex-col gap-3'>
+                    <h3 className='text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] px-1'>
+                        {category.category}
+                    </h3>
+                    <div className='flex flex-col gap-2.5'>
                         {category.tools.map((tool, index) => (
                             <div
                                 key={index}
-                                className='group flex items-center gap-3 p-3 border border-gray-100 dark:border-gray-900 rounded-xl cursor-grab active:cursor-grabbing hover:border-primary/50 hover:shadow-sm transition-all bg-gray-50/50 dark:bg-gray-900/30'
+                                className='group flex items-center gap-3 p-3.5 border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-primary/30 hover:bg-primary/5 transition-all bg-black/20 backdrop-blur-sm hover:shadow-[0_0_20px_rgba(6,182,212,0.1)]'
                                 onDragStart={(event) => onDragStart(event, tool.type)}
                                 draggable
                             >
-                                <div className={`w-9 h-9 ${tool.bgColor} rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                                <div className={`w-10 h-10 ${tool.bgColor} rounded-lg flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform border border-white/5`}>
                                     <tool.icon className={`h-5 w-5 ${tool.color}`} />
                                 </div>
                                 <div className='flex flex-col flex-1'>
                                     <div className='flex items-center gap-2'>
-                                        <span className='font-semibold text-sm'>{tool.name}</span>
+                                        <span className='font-semibold text-sm text-gray-200'>{tool.name}</span>
                                         {tool.beta && (
-                                            <span className='text-[9px] bg-violet-500/20 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider'>Beta</span>
+                                            <span className='text-[9px] bg-violet-500/20 text-violet-400 px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider border border-violet-500/30'>Beta</span>
                                         )}
                                     </div>
-                                    <p className='text-[10px] text-gray-500 leading-tight'>{tool.description}</p>
+                                    <p className='text-[11px] text-gray-500 leading-tight mt-0.5'>{tool.description}</p>
                                 </div>
                             </div>
                         ))}

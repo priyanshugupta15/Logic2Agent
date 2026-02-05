@@ -9,6 +9,7 @@
  */
 
 import type * as agent from "../agent.js";
+import type * as chatHistory from "../chatHistory.js";
 import type * as user from "../user.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
+  chatHistory: typeof chatHistory;
   user: typeof user;
 }>;
 

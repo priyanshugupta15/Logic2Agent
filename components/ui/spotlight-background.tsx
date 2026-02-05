@@ -19,12 +19,14 @@ const Spotlight = ({ className, ...props }: SpotlightProps) => {
 
 interface SpotlightBackgroundProps {
     children: React.ReactNode;
+    className?: string;
+    contentClassName?: string;
 }
 
 // SpotlightBackground container
-const SpotlightBackground = ({ children }: SpotlightBackgroundProps) => {
+const SpotlightBackground = ({ children, className, contentClassName }: SpotlightBackgroundProps) => {
     return (
-        <div className="spotlight-container">
+        <div className={`spotlight-container ${className || ""}`}>
             <div className="spotlight-overlay">
                 <Spotlight
                     initial={{ x: "-50%", y: "-50%", rotate: "0deg" }}
@@ -77,7 +79,7 @@ const SpotlightBackground = ({ children }: SpotlightBackgroundProps) => {
                 />
             </div>
 
-            <div className="spotlight-content">
+            <div className={`spotlight-content ${contentClassName || ""}`}>
                 {children}
             </div>
         </div>
