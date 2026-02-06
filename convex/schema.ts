@@ -6,7 +6,9 @@ export default defineSchema({
         name: v.string(),
         email: v.string(),
         subscription: v.optional(v.string()),
-        token: v.number()
+        token: v.number(),
+        lastLoginAt: v.optional(v.number()),
+        sessionExpiresAt: v.optional(v.number())
     }),
 
     AgentTable: defineTable({
